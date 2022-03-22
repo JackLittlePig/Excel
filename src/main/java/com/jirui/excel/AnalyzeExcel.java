@@ -22,7 +22,7 @@ public class AnalyzeExcel {
     private static final String DEFAULT_ALL_SIGN_IN_FILE_PATH = "/Users/leizhao/leizhao/excel_data/record4.xlsx";
     private static final String DEFAULT_RESULT_EXPORT_EXCEL_PATH = "/Users/leizhao/leizhao/excel_data/result.xls";
 
-    private static final String FILTER_EMP_TYPE = "外协人员";
+    private static final String FILTER_EMP_TYPE = "正式员工";
 
     private static final int CELL_COUNT = 3;
 
@@ -163,7 +163,7 @@ public class AnalyzeExcel {
                 String empName = empNameCell.toString();
                 String departNo = departNoCell.toString();
                 String empType = empTypeCell.toString();
-                if (FILTER_EMP_TYPE.equals(empType)) {
+                if (!FILTER_EMP_TYPE.equals(empType)) {
                     employeeList.add(new Employee(empName, departNo, empType));
                 }
             }
