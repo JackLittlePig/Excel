@@ -18,9 +18,9 @@ public class AnalyzeExcel {
     private static final String EXCEL_XLS = "xls";
     private static final String EXCEL_XLSX = "xlsx";
 
-    private static final String DEFAULT_ALL_EMP_FILE_PATH = "/Users/leizhao/leizhao/excel_data/all_employee.xls";
-    private static final String DEFAULT_ALL_SIGN_IN_FILE_PATH = "/Users/leizhao/leizhao/excel_data/record4.xlsx";
-    private static final String DEFAULT_RESULT_EXPORT_EXCEL_PATH = "/Users/leizhao/leizhao/excel_data/result.xls";
+    private static final String DEFAULT_ALL_EMP_FILE_PATH = "/Users/leizhao/leizhao/excel_data/总表.xls";
+    private static final String DEFAULT_ALL_SIGN_IN_FILE_PATH = "/Users/leizhao/leizhao/excel_data/刷卡表.xlsx";
+    private static final String DEFAULT_RESULT_EXPORT_EXCEL_PATH = "/Users/leizhao/leizhao/excel_data/未刷卡表.xls";
 
     private static final String FILTER_EMP_TYPE = "正式员工";
 
