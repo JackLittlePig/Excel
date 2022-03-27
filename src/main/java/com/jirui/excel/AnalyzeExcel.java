@@ -15,14 +15,19 @@ import java.util.*;
 
 public class AnalyzeExcel {
 
+    private static final String PATH_MAC = "/Users/leizhao/leizhao/excel_data";
+    private static final String PATH_WINDOWS = "E:\\未考勤人员";
+
+    private static final String FILE_PATH = PATH_WINDOWS;
+
     private static final String EXCEL_XLS = "xls";
     private static final String EXCEL_XLSX = "xlsx";
 
-    private static final String DEFAULT_ALL_EMP_FILE_PATH = "/Users/leizhao/leizhao/excel_data/总表.xls";
-    private static final String DEFAULT_ALL_SIGN_IN_FILE_PATH = "/Users/leizhao/leizhao/excel_data/刷卡表.xlsx";
-    private static final String DEFAULT_RESULT_EXPORT_NOT_SIGN_IN_PATH = "/Users/leizhao/leizhao/excel_data/未刷卡表.xls";
-    private static final String DEFAULT_RESULT_EXPORT_SIGN_IN_PATH = "/Users/leizhao/leizhao/excel_data/已刷卡表.xls";
-    private static final String DEFAULT_RESULT_EXPORT_ALL_PATH = "/Users/leizhao/leizhao/excel_data/签到未签到总表.xls";
+    private static final String DEFAULT_ALL_EMP_FILE_PATH = FILE_PATH + "/总表.xls";
+    private static final String DEFAULT_ALL_SIGN_IN_FILE_PATH = FILE_PATH + "/刷卡表.xlsx";
+    private static final String DEFAULT_RESULT_EXPORT_NOT_SIGN_IN_PATH = FILE_PATH + "/未刷卡表.xls";
+    private static final String DEFAULT_RESULT_EXPORT_SIGN_IN_PATH = FILE_PATH + "/已刷卡表.xls";
+    private static final String DEFAULT_RESULT_EXPORT_ALL_PATH = FILE_PATH + "/签到未签到总表.xls";
 
 
     private static final String FILTER_EMP_TYPE = "正式员工";
