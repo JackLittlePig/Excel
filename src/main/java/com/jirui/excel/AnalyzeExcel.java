@@ -20,7 +20,10 @@ public class AnalyzeExcel {
 
     private static final String DEFAULT_ALL_EMP_FILE_PATH = "/Users/leizhao/leizhao/excel_data/总表.xls";
     private static final String DEFAULT_ALL_SIGN_IN_FILE_PATH = "/Users/leizhao/leizhao/excel_data/刷卡表.xlsx";
-    private static final String DEFAULT_RESULT_EXPORT_EXCEL_PATH = "/Users/leizhao/leizhao/excel_data/未刷卡表.xls";
+    private static final String DEFAULT_RESULT_EXPORT_NOT_SIGN_IN_PATH = "/Users/leizhao/leizhao/excel_data/未刷卡表.xls";
+    private static final String DEFAULT_RESULT_EXPORT_SIGN_IN_PATH = "/Users/leizhao/leizhao/excel_data/已刷卡表.xls";
+    private static final String DEFAULT_RESULT_EXPORT_ALL_PATH = "/Users/leizhao/leizhao/excel_data/签到未签到总表.xls";
+
 
     private static final String FILTER_EMP_TYPE = "正式员工";
 
@@ -40,18 +43,22 @@ public class AnalyzeExcel {
     private final Map<String, List<Employee>> signInMap = new HashMap<String, List<Employee>>();
     private final Map<String, List<Employee>> employeeMap = new HashMap<String, List<Employee>>();
 
-    private final List<Employee> resultExcelList = new ArrayList<Employee>();
+    private final List<Employee> resultSignInList = new ArrayList<Employee>();
+    private final List<Employee> resultNotSignInList = new ArrayList<Employee>();
+    private final List<AllResult> allResultList = new ArrayList<AllResult>();
     private final Map<String, Set<String>> resultTxtMap = new HashMap();
 
     public void start() throws IOException {
         readEmployee();
         readSignIn();
         analyze();
-        writeNotSignInFile();
+        writeResultToFile(resultNotSignInList, DEFAULT_RESULT_EXPORT_NOT_SIGN_IN_PATH);
+        writeResultToFile(resultSignInList, DEFAULT_RESULT_EXPORT_SIGN_IN_PATH);
+        writeAllResultToFile(allResultList, DEFAULT_RESULT_EXPORT_ALL_PATH);
     }
 
-    private void writeNotSignInFile() throws IOException {
-        if (resultExcelList == null || resultExcelList.size() == 0) {
+    private void writeAllResultToFile(List<AllResult> list, String filePath) throws IOException {
+        if (list == null || list.size() == 0) {
             return;
         }
         Workbook workbook = new HSSFWorkbook();
@@ -60,15 +67,48 @@ public class AnalyzeExcel {
             sheet.setColumnWidth(i, 7000);
         }
         sheet.setDefaultRowHeight((short) 400);
-        for (int i = 0; i < resultExcelList.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
             Row row = sheet.createRow(i);
-            row.createCell(0).setCellValue(resultExcelList.get(i).depart);
-            row.createCell(1).setCellValue(resultExcelList.get(i).name);
-            row.createCell(2).setCellValue(resultExcelList.get(i).type);
+            row.createCell(0).setCellValue(list.get(i).depart);
+            row.createCell(1).setCellValue(list.get(i).allNo);
+            row.createCell(2).setCellValue(list.get(i).signInNo);
+            row.createCell(3).setCellValue(list.get(i).notSignInNo);
         }
         FileOutputStream fos = null;
         try {
-            File notSignInFile = new File(DEFAULT_RESULT_EXPORT_EXCEL_PATH);
+            File notSignInFile = new File(filePath);
+            if (!notSignInFile.exists()) {
+                notSignInFile.createNewFile();
+            }
+            fos = new FileOutputStream(notSignInFile);
+            workbook.write(fos);
+            fos.flush();
+        } finally {
+            if (fos != null) {
+                fos.close();
+            }
+        }
+    }
+
+    private void writeResultToFile(List<Employee> list, String filePath) throws IOException {
+        if (list == null || list.size() == 0) {
+            return;
+        }
+        Workbook workbook = new HSSFWorkbook();
+        Sheet sheet = workbook.createSheet();
+        for (int i = 0; i < CELL_COUNT; i++) {
+            sheet.setColumnWidth(i, 7000);
+        }
+        sheet.setDefaultRowHeight((short) 400);
+        for (int i = 0; i < list.size(); i++) {
+            Row row = sheet.createRow(i);
+            row.createCell(0).setCellValue(list.get(i).depart);
+            row.createCell(1).setCellValue(list.get(i).name);
+            row.createCell(2).setCellValue(list.get(i).type);
+        }
+        FileOutputStream fos = null;
+        try {
+            File notSignInFile = new File(filePath);
             if (!notSignInFile.exists()) {
                 notSignInFile.createNewFile();
             }
@@ -83,6 +123,9 @@ public class AnalyzeExcel {
     }
 
     private void analyze() {
+        allResultList.add(new AllResult("部门名", "部门人数", "已考勤人数", "未考勤人数"));
+        resultNotSignInList.add(new Employee("未考勤人员名" , "部门名" , "部门人数"));
+        resultSignInList.add(new Employee("已考勤人员名" , "部门名" , "部门人数"));
         int count = 0;
         for (Map.Entry<String, List<Employee>> entry : signInMap.entrySet()) {
             if (employeeMap.get(entry.getKey()) == null) {
@@ -93,11 +136,20 @@ public class AnalyzeExcel {
                 employeeSet.add(employee.name);
             }
 
+            int allNo = employeeSet.size();
+
             Set<String> signInSet = new HashSet<String>();
             for (Employee signIn : entry.getValue()) {
                 signInSet.add(signIn.name);
+
+                resultSignInList.add(new Employee(signIn.name, signIn.depart, String.valueOf(entry.getValue().size())));
             }
+
+            int signInNo = signInSet.size();
+
             employeeSet.removeAll(signInSet);
+
+            int notSignNo = employeeSet.size();
 
             if (employeeSet.size() > 0) {
                 System.out.println("公司: " + entry.getKey());
@@ -107,10 +159,16 @@ public class AnalyzeExcel {
                 resultTxtMap.put(entry.getKey(), employeeSet);
 
                 for (String empName : employeeSet) {
-                    resultExcelList.add(new Employee(empName, entry.getKey(), String.valueOf(employeeSet.size())));
+                    resultNotSignInList.add(new Employee(empName, entry.getKey(), String.valueOf(employeeSet.size())));
                 }
             }
             count += employeeSet.size();
+
+            allResultList.add(new AllResult(entry.getKey()
+                    , String.valueOf(allNo)
+                    , String.valueOf(signInNo)
+                    , String.valueOf(notSignNo)
+            ));
         }
 
         System.out.println("外协总共未打卡人数: " + count);
