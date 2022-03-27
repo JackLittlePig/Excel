@@ -18,7 +18,7 @@ public class AnalyzeExcel {
     private static final String PATH_MAC = "/Users/leizhao/leizhao/excel_data";
     private static final String PATH_WINDOWS = "E:\\未考勤人员";
 
-    private static final String FILE_PATH = PATH_MAC;
+    private static final String FILE_PATH = PATH_WINDOWS;
 
     private static final String EXCEL_XLS = "xls";
     private static final String EXCEL_XLSX = "xlsx";
