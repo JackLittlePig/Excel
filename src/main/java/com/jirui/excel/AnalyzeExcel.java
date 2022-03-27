@@ -18,7 +18,7 @@ public class AnalyzeExcel {
     private static final String PATH_MAC = "/Users/leizhao/leizhao/excel_data";
     private static final String PATH_WINDOWS = "E:\\未考勤人员";
 
-    private static final String FILE_PATH = PATH_WINDOWS;
+    private static final String FILE_PATH = PATH_MAC;
 
     private static final String EXCEL_XLS = "xls";
     private static final String EXCEL_XLSX = "xlsx";
@@ -42,10 +42,12 @@ public class AnalyzeExcel {
     private static final int CELL_ALL_EMP_DEPART_NO = 6;
     private static final int CELL_ALL_EMP_TYPE = 17;
 
+    private final List<Employee> noRegEmployeeList = new ArrayList<Employee>();
     private final List<Employee> employeeList = new ArrayList<Employee>();
     private final List<Employee> signInList = new ArrayList<Employee>();
 
     private final Map<String, List<Employee>> signInMap = new HashMap<String, List<Employee>>();
+    private final Map<String, List<Employee>> noRegEmployeeMap = new HashMap<String, List<Employee>>();
     private final Map<String, List<Employee>> employeeMap = new HashMap<String, List<Employee>>();
 
     private final List<Employee> resultSignInList = new ArrayList<Employee>();
@@ -68,7 +70,7 @@ public class AnalyzeExcel {
         }
         Workbook workbook = new HSSFWorkbook();
         Sheet sheet = workbook.createSheet();
-        for (int i = 0; i < CELL_COUNT; i++) {
+        for (int i = 0; i < 4; i++) {
             sheet.setColumnWidth(i, 7000);
         }
         sheet.setDefaultRowHeight((short) 400);
@@ -128,20 +130,18 @@ public class AnalyzeExcel {
     }
 
     private void analyze() {
-        allResultList.add(new AllResult("部门名", "部门人数", "已考勤人数", "未考勤人数"));
-        resultNotSignInList.add(new Employee("未考勤人员名" , "部门名" , "部门人数"));
-        resultSignInList.add(new Employee("已考勤人员名" , "部门名" , "部门人数"));
+        allResultList.add(new AllResult("部门名", "部门所有人数", "所有已考勤人数", "非正式未考勤人数"));
+        resultNotSignInList.add(new Employee("非正式未考勤人员名" , "部门名" , "非正式未考勤人数"));
+        resultSignInList.add(new Employee("所有已考勤人员名" , "部门名" , "所有已考勤人数"));
         int count = 0;
         for (Map.Entry<String, List<Employee>> entry : signInMap.entrySet()) {
-            if (employeeMap.get(entry.getKey()) == null) {
+            if (noRegEmployeeMap.get(entry.getKey()) == null) {
                 continue;
             }
             Set<String> employeeSet = new HashSet<String>();
-            for (Employee employee : employeeMap.get(entry.getKey())) {
+            for (Employee employee : noRegEmployeeMap.get(entry.getKey())) {
                 employeeSet.add(employee.name);
             }
-
-            int allNo = employeeSet.size();
 
             Set<String> signInSet = new HashSet<String>();
             for (Employee signIn : entry.getValue()) {
@@ -170,7 +170,7 @@ public class AnalyzeExcel {
             count += employeeSet.size();
 
             allResultList.add(new AllResult(entry.getKey()
-                    , String.valueOf(allNo)
+                    , String.valueOf(employeeMap.get(entry.getKey()).size())
                     , String.valueOf(signInNo)
                     , String.valueOf(notSignNo)
             ));
@@ -227,9 +227,21 @@ public class AnalyzeExcel {
                 String departNo = departNoCell.toString();
                 String empType = empTypeCell.toString();
                 if (!FILTER_EMP_TYPE.equals(empType)) {
-                    employeeList.add(new Employee(empName, departNo, empType));
+                    noRegEmployeeList.add(new Employee(empName, departNo, empType));
                 }
+                employeeList.add(new Employee(empName, departNo, empType));
             }
+        }
+
+        for (Employee employee : noRegEmployeeList) {
+            if (employee == null) {
+                continue;
+            }
+            if (noRegEmployeeMap.get(employee.depart) == null) {
+                noRegEmployeeMap.put(employee.depart, new ArrayList<Employee>());
+            }
+            List<Employee> values = noRegEmployeeMap.get(employee.depart);
+            values.add(employee);
         }
 
         for (Employee employee : employeeList) {
