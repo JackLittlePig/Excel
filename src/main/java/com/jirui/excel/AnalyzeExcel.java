@@ -50,18 +50,19 @@ public class AnalyzeExcel {
     private final Map<String, List<Employee>> noRegEmployeeMap = new HashMap<String, List<Employee>>();
     private final Map<String, List<Employee>> employeeMap = new HashMap<String, List<Employee>>();
 
-    private final List<Employee> resultSignInList = new ArrayList<Employee>();
-    private final List<Employee> resultNotSignInList = new ArrayList<Employee>();
-    private final List<AllResult> allResultList = new ArrayList<AllResult>();
-    private final Map<String, Set<String>> resultTxtMap = new HashMap();
+    private final List<Employee> exportExcelSignInList = new ArrayList<Employee>();
+    private final List<Employee> exportExcelNotSignInList = new ArrayList<Employee>();
+    private final List<AllResult> exportExcelAllResultList = new ArrayList<AllResult>();
 
     public void start() throws IOException {
+        System.out.println("程序开始执行.....");
         readEmployee();
         readSignIn();
         analyze();
-        writeResultToFile(resultNotSignInList, DEFAULT_RESULT_EXPORT_NOT_SIGN_IN_PATH);
-        writeResultToFile(resultSignInList, DEFAULT_RESULT_EXPORT_SIGN_IN_PATH);
-        writeAllResultToFile(allResultList, DEFAULT_RESULT_EXPORT_ALL_PATH);
+        writeResultToFile(exportExcelNotSignInList, DEFAULT_RESULT_EXPORT_NOT_SIGN_IN_PATH);
+        writeResultToFile(exportExcelSignInList, DEFAULT_RESULT_EXPORT_SIGN_IN_PATH);
+        writeAllResultToFile(exportExcelAllResultList, DEFAULT_RESULT_EXPORT_ALL_PATH);
+        System.out.println("程序执行结束.....");
     }
 
     private void writeAllResultToFile(List<AllResult> list, String filePath) throws IOException {
@@ -130,10 +131,9 @@ public class AnalyzeExcel {
     }
 
     private void analyze() {
-        allResultList.add(new AllResult("部门名", "部门所有人数", "所有已考勤人数", "非正式未考勤人数"));
-        resultNotSignInList.add(new Employee("非正式未考勤人员名" , "部门名" , "非正式未考勤人数"));
-        resultSignInList.add(new Employee("所有已考勤人员名" , "部门名" , "所有已考勤人数"));
-        int count = 0;
+        exportExcelAllResultList.add(new AllResult("部门名", "部门所有人数", "所有已考勤人数", "非正式未考勤人数"));
+        exportExcelNotSignInList.add(new Employee("非正式未考勤人员名" , "部门名" , "非正式未考勤人数"));
+        exportExcelSignInList.add(new Employee("所有已考勤人员名" , "部门名" , "所有已考勤人数"));
         for (Map.Entry<String, List<Employee>> entry : signInMap.entrySet()) {
             if (noRegEmployeeMap.get(entry.getKey()) == null) {
                 continue;
@@ -147,7 +147,7 @@ public class AnalyzeExcel {
             for (Employee signIn : entry.getValue()) {
                 signInSet.add(signIn.name);
 
-                resultSignInList.add(new Employee(signIn.name, signIn.depart, String.valueOf(entry.getValue().size())));
+                exportExcelSignInList.add(new Employee(signIn.name, signIn.depart, String.valueOf(entry.getValue().size())));
             }
 
             int signInNo = signInSet.size();
@@ -157,26 +157,16 @@ public class AnalyzeExcel {
             int notSignNo = employeeSet.size();
 
             if (employeeSet.size() > 0) {
-                System.out.println("公司: " + entry.getKey());
-                System.out.println("未打开人员数: " + employeeSet.size());
-                System.out.println("未打卡人员列表: " + employeeSet.toString());
-
-                resultTxtMap.put(entry.getKey(), employeeSet);
-
                 for (String empName : employeeSet) {
-                    resultNotSignInList.add(new Employee(empName, entry.getKey(), String.valueOf(employeeSet.size())));
+                    exportExcelNotSignInList.add(new Employee(empName, entry.getKey(), String.valueOf(employeeSet.size())));
                 }
             }
-            count += employeeSet.size();
-
-            allResultList.add(new AllResult(entry.getKey()
+            exportExcelAllResultList.add(new AllResult(entry.getKey()
                     , String.valueOf(employeeMap.get(entry.getKey()).size())
                     , String.valueOf(signInNo)
                     , String.valueOf(notSignNo)
             ));
         }
-
-        System.out.println("外协总共未打卡人数: " + count);
     }
 
     private void readSignIn() throws IOException {
@@ -248,6 +238,14 @@ public class AnalyzeExcel {
             if (employee == null) {
                 continue;
             }
+            if (signInMap.get(employee.depart) == null) {
+                signInMap.put(employee.depart, new ArrayList<Employee>());
+            }
+
+            if (noRegEmployeeMap.get(employee.depart) == null) {
+                noRegEmployeeMap.put(employee.depart, new ArrayList<Employee>());
+            }
+
             if (employeeMap.get(employee.depart) == null) {
                 employeeMap.put(employee.depart, new ArrayList<Employee>());
             }
